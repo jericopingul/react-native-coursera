@@ -22,6 +22,16 @@ export const comments = (
         comments: [],
       };
 
+    case ActionTypes.ADD_COMMENT:
+      const lastComment = state.comments[state.comments.length - 1];
+      return {
+        ...state,
+        comments: state.comments.concat({
+          ...action.payload,
+          id: lastComment ? lastComment.id + 1 : 0,
+        }),
+      };
+
     default:
       return state;
   }
