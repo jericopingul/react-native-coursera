@@ -41,8 +41,12 @@ export const fetchDishes = () => (dispatch) => {
     .then(
       (response) => {
         if (response.ok) {
+          console.log('response', response);
+
           return response;
         } else {
+          console.log('response', response);
+
           const error = new Error(
             'Error ' + response.status + ':' + response.statusText
           );
@@ -150,4 +154,15 @@ export const leadersFailed = (errMess) => ({
 export const addLeaders = (leaders) => ({
   type: ActionTypes.ADD_LEADERS,
   payload: leaders,
+});
+
+export const postFavorite = (dishId) => (dispatch) => {
+  setTimeout(() => {
+    dispatch(addFavorite(dishId));
+  }, 2000);
+};
+
+export const addFavorite = (dishId) => ({
+  type: ActionTypes.ADD_FAVORITE,
+  payload: dishId,
 });

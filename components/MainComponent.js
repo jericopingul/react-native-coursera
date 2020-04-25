@@ -18,7 +18,27 @@ import {
 } from 'react-navigation';
 import Contact from './ContactComponent';
 import About from './AboutComponent';
+import Reservation from './ReservationComponent';
 import { Icon } from 'react-native-elements';
+
+import { connect } from 'react-redux';
+import {
+  fetchDishes,
+  fetchComments,
+  fetchPromos,
+  fetchLeaders,
+} from '../redux/ActionCreators';
+
+const mapStateToProps = () => {
+  return {};
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchDishes: () => dispatch(fetchDishes()),
+  fetchComments: () => dispatch(fetchComments()),
+  fetchPromos: () => dispatch(fetchPromos()),
+  fetchLeaders: () => dispatch(fetchLeaders()),
+});
 
 const MenuNavigator = createStackNavigator(
   {
@@ -79,6 +99,31 @@ const HomeNavigator = createStackNavigator(
 const ContactNavigator = createStackNavigator(
   {
     Contact: { screen: Contact },
+  },
+  {
+    navigationOptions: ({ navigation }) => ({
+      headerStyle: {
+        backgroundColor: '#512DA8',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        color: '#fff',
+      },
+      headerLeft: (
+        <Icon
+          name='menu'
+          size={24}
+          color='white'
+          onPress={() => navigation.toggleDrawer()}
+        />
+      ),
+    }),
+  }
+);
+
+const ReservationNavigator = createStackNavigator(
+  {
+    Reservation: { screen: Reservation },
   },
   {
     navigationOptions: ({ navigation }) => ({
@@ -200,6 +245,21 @@ const MainNavigator = createDrawerNavigator(
         ),
       },
     },
+    Reservation: {
+      screen: ReservationNavigator,
+      navigationOptions: {
+        title: 'Reserve Table',
+        drawerLabel: 'Reserve Table',
+        drawerIcon: ({ tintColor }) => (
+          <Icon
+            name='cutlery'
+            type='font-awesome'
+            size={24}
+            color={tintColor}
+          />
+        ),
+      },
+    },
   },
   {
     drawerBackgroundColor: '#D1C4E9',
@@ -208,6 +268,13 @@ const MainNavigator = createDrawerNavigator(
 );
 
 class Main extends Component {
+  componentDidMount() {
+    this.props.fetchDishes();
+    this.props.fetchComments();
+    this.props.fetchPromos();
+    this.props.fetchLeaders();
+  }
+
   render() {
     return (
       <View
@@ -245,4 +312,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Main;
+export default connect(mapStateToProps, mapDispatchToProps)(Main);
