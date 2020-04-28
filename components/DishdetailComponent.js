@@ -29,7 +29,7 @@ const mapDispatchToProps = (dispatch) => ({
   postFavorite: (dishId) => dispatch(postFavorite(dishId)),
 });
 
-function RenderDish({ dish, favorite, onFavorite, onEdit }) {
+function RenderDish({ dish, favorite, onFavorite, toggleModal }) {
   let view;
   const handleViewRef = (ref) => (view = ref);
 
@@ -40,6 +40,15 @@ function RenderDish({ dish, favorite, onFavorite, onEdit }) {
 
     if (dx < -200) {
       // right to left pan gesture
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const recognizeComment = ({ dx }) => {
+    if (dx > 200) {
+      // left to right
       return true;
     } else {
       return false;
@@ -58,8 +67,8 @@ function RenderDish({ dish, favorite, onFavorite, onEdit }) {
           console.log(endState.finished ? 'finished' : 'cancelled')
         );
     },
+    // when user lifts off finger from screen
     onPanResponderEnd: (e, gestureState) => {
-      // when user lifts off finger from screen
       if (recognizeDrag(gestureState)) {
         Alert.alert(
           'Add to Favorites?',
@@ -80,6 +89,10 @@ function RenderDish({ dish, favorite, onFavorite, onEdit }) {
           { cancelable: false }
         );
         return true;
+      }
+
+      if (recognizeComment(gestureState)) {
+        toggleModal();
       }
     },
   });
@@ -113,7 +126,7 @@ function RenderDish({ dish, favorite, onFavorite, onEdit }) {
               type='font-awesome'
               color='#512DA8'
               onPress={() => {
-                onEdit();
+                toggleModal();
               }}
             />
           </View>
@@ -223,7 +236,7 @@ class Dishdetail extends Component {
           dish={this.props.dishes.dishes[+dishId]}
           favorite={this.props.favorites.some((el) => el === dishId)}
           onFavorite={() => this.markFavorite(dishId)}
-          onEdit={() => this.toggleModal()}
+          toggleModal={() => this.toggleModal()}
         />
         <RenderComments
           comments={this.props.comments.comments.filter(

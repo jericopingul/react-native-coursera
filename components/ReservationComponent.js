@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import {
   Text,
   View,
-  ScrollView,
   StyleSheet,
   Picker,
   Switch,
   Button,
   Modal,
+  Alert,
 } from 'react-native';
 import DatePicker from 'react-native-datepicker';
+import * as Animatable from 'react-native-animatable';
 
 class Reservation extends Component {
   constructor(props) {
@@ -44,9 +45,34 @@ class Reservation extends Component {
     });
   }
 
+  showAlert() {
+    const { guests, smoking, date } = this.state;
+    Alert.alert(
+      'Your Reservation OK?',
+      'Number of Guests: ' +
+        guests +
+        '\nSmoking? ' +
+        smoking +
+        '\nDate and Time: ' +
+        date,
+      [
+        {
+          text: 'Cancel',
+          onPress: () => this.resetForm(),
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => this.resetForm(),
+        },
+      ],
+      { cancellable: false }
+    );
+  }
+
   render() {
     return (
-      <ScrollView>
+      <Animatable.View animation='zoomIn' duration={2000} delay={1000}>
         <View style={styles.formRow}>
           <Text style={styles.formLabel}>Number of Guests</Text>
           <Picker
@@ -104,7 +130,7 @@ class Reservation extends Component {
           <Button
             title='Reserve'
             color='#512DA8'
-            onPress={() => this.handleReservation()}
+            onPress={() => this.showAlert()}
             accessibilityLabel='Learn more about this purple button'
           />
         </View>
@@ -142,7 +168,7 @@ class Reservation extends Component {
             />
           </View>
         </Modal>
-      </ScrollView>
+      </Animatable.View>
     );
   }
 }
