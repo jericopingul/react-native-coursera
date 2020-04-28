@@ -19,6 +19,7 @@ import {
 import Contact from './ContactComponent';
 import About from './AboutComponent';
 import Reservation from './ReservationComponent';
+import Favorites from './FavoriteComponent';
 import { Icon } from 'react-native-elements';
 
 import { connect } from 'react-redux';
@@ -124,6 +125,31 @@ const ContactNavigator = createStackNavigator(
 const ReservationNavigator = createStackNavigator(
   {
     Reservation: { screen: Reservation },
+  },
+  {
+    navigationOptions: ({ navigation }) => ({
+      headerStyle: {
+        backgroundColor: '#512DA8',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        color: '#fff',
+      },
+      headerLeft: (
+        <Icon
+          name='menu'
+          size={24}
+          color='white'
+          onPress={() => navigation.toggleDrawer()}
+        />
+      ),
+    }),
+  }
+);
+
+const FavoritesNavigator = createStackNavigator(
+  {
+    Favorites: { screen: Favorites },
   },
   {
     navigationOptions: ({ navigation }) => ({
@@ -257,6 +283,16 @@ const MainNavigator = createDrawerNavigator(
             size={24}
             color={tintColor}
           />
+        ),
+      },
+    },
+    Favorites: {
+      screen: FavoritesNavigator,
+      navigationOptions: {
+        title: 'My Favorites',
+        drawerLabel: 'My Favorites',
+        drawerIcon: ({ tintColor }) => (
+          <Icon name='heart' type='font-awesome' size={24} color={tintColor} />
         ),
       },
     },

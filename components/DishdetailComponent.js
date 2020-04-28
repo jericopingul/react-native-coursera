@@ -7,11 +7,14 @@ import {
   StyleSheet,
   Modal,
   Button,
+  Alert,
+  PanResponder,
 } from 'react-native';
 import { Card, Icon, Rating, Input } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { baseUrl } from '../shared/baseUrl';
 import { postFavorite, postComment } from '../redux/ActionCreators';
+import * as Animatable from 'react-native-animatable';
 
 const mapStateToProps = (state) => {
   return {
@@ -26,39 +29,101 @@ const mapDispatchToProps = (dispatch) => ({
   postFavorite: (dishId) => dispatch(postFavorite(dishId)),
 });
 
-const RenderDish = ({ dish, favorite, onFavorite, onEdit }) => {
+function RenderDish({ dish, favorite, onFavorite, onEdit }) {
+  let view;
+  const handleViewRef = (ref) => (view = ref);
+
+  const recognizeDrag = ({ moveX, moveY, dx, dy }) => {
+    // moveX, moveY latest x, y coordinates
+    // dx, dy - accumulated distance of gesture in x, y axis
+    // 0,0 at top left corner
+
+    if (dx < -200) {
+      // right to left pan gesture
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: (e, gestureState) => {
+      return true;
+    },
+    onPanResponderGrant: () => {
+      // called when pan responder gesture started
+      view
+        .rubberBand(1000)
+        .then((endState) =>
+          console.log(endState.finished ? 'finished' : 'cancelled')
+        );
+    },
+    onPanResponderEnd: (e, gestureState) => {
+      // when user lifts off finger from screen
+      if (recognizeDrag(gestureState)) {
+        Alert.alert(
+          'Add to Favorites?',
+          'Are you sure you wish to add ' + dish.name + ' to your favorites?',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel pressed'),
+              style: 'cancel',
+            },
+            {
+              text: 'OK',
+              onPress: () => {
+                favorite ? console.log('Already favorite') : onFavorite();
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return true;
+      }
+    },
+  });
+
   if (dish != null) {
     return (
-      <Card featuredTitle={dish.name} image={{ uri: baseUrl + dish.image }}>
-        <Text style={{ margin: 10 }}>{dish.description}</Text>
-        <View style={styles.dishIcons}>
-          <Icon
-            raised
-            reverse
-            name={favorite ? 'heart' : 'heart-o'}
-            type='font-awesome'
-            color='#f50'
-            onPress={() => {
-              favorite ? console.log('Already favorite') : onFavorite();
-            }}
-          />
-          <Icon
-            raised
-            reverse
-            name={'pencil'}
-            type='font-awesome'
-            color='#512DA8'
-            onPress={() => {
-              onEdit();
-            }}
-          />
-        </View>
-      </Card>
+      <Animatable.View
+        animation='fadeInDown'
+        duration={2000}
+        delay={1000}
+        ref={handleViewRef}
+        {...panResponder.panHandlers} // any gestures in view will be handled by panHandler
+      >
+        <Card featuredTitle={dish.name} image={{ uri: baseUrl + dish.image }}>
+          <Text style={{ margin: 10 }}>{dish.description}</Text>
+          <View style={styles.dishIcons}>
+            <Icon
+              raised
+              reverse
+              name={favorite ? 'heart' : 'heart-o'}
+              type='font-awesome'
+              color='#f50'
+              onPress={() => {
+                favorite ? console.log('Already favorite') : onFavorite();
+              }}
+            />
+            <Icon
+              raised
+              reverse
+              name={'pencil'}
+              type='font-awesome'
+              color='#512DA8'
+              onPress={() => {
+                onEdit();
+              }}
+            />
+          </View>
+        </Card>
+      </Animatable.View>
     );
   } else {
     return <View></View>;
   }
-};
+}
 
 const RenderComments = ({ comments }) => {
   const renderCommentItem = ({ item, index }) => {
@@ -74,13 +139,15 @@ const RenderComments = ({ comments }) => {
   };
 
   return (
-    <Card title='Comments'>
-      <FlatList
-        data={comments}
-        renderItem={renderCommentItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
-    </Card>
+    <Animatable.View animation='fadeInUp' duration={2000} delay={1000}>
+      <Card title='Comments'>
+        <FlatList
+          data={comments}
+          renderItem={renderCommentItem}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      </Card>
+    </Animatable.View>
   );
 };
 
