@@ -13,6 +13,7 @@ import DatePicker from 'react-native-datepicker';
 import * as Animatable from 'react-native-animatable';
 import { Notifications } from 'expo';
 import * as Permissions from 'expo-permissions';
+import * as Calendar from 'expo-calendar';
 
 class Reservation extends Component {
   constructor(props) {
@@ -36,7 +37,57 @@ class Reservation extends Component {
 
   handleReservation() {
     console.log(JSON.stringify(this.state));
-    this.showAlert();
+    const { guests, smoking, date } = this.state;
+    Alert.alert(
+      'Your Reservation OK?',
+      'Number of Guests: ' +
+        guests +
+        '\nSmoking? ' +
+        smoking +
+        '\nDate and Time: ' +
+        date,
+      [
+        {
+          text: 'Cancel',
+          onPress: () => this.resetForm(),
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: async () => {
+            const allowed = !!(await this.obtainCalendarPermission());
+            if (allowed) {
+              this.addReservationToCalendar(this.state.date);
+              this.presentLocalNotification(this.state.date);
+              this.resetForm();
+            }
+          },
+        },
+      ],
+      { cancellable: false }
+    );
+  }
+
+  async obtainCalendarPermission() {
+    const calendarPermission = await Permissions.askAsync(Permissions.CALENDAR);
+    console.log(calendarPermission);
+    if (calendarPermission.status !== 'granted') {
+      Alert.alert('Permission not granted to access calendar');
+    }
+    return calendarPermission;
+  }
+
+  addReservationToCalendar(date) {
+    const startDate = new Date(date);
+    // Calendar.DEFAULT has been removed from Expo 34 (default calendar is '5')
+    Calendar.createEventAsync('5', {
+      title: 'Con Fusion Table Reservation',
+      startDate: startDate,
+      endDate: new Date(startDate.getTime() + 2 * 60 * 60 * 1000),
+      timeZone: 'Asia/Hong_Kong',
+      location:
+        '121, Clear Water Bay Road, Clear Water Bay, Kowloon, Hong Kong',
+    });
   }
 
   resetForm() {
@@ -76,34 +127,6 @@ class Reservation extends Component {
         color: '#512DA8',
       },
     });
-  }
-
-  showAlert() {
-    const { guests, smoking, date } = this.state;
-    Alert.alert(
-      'Your Reservation OK?',
-      'Number of Guests: ' +
-        guests +
-        '\nSmoking? ' +
-        smoking +
-        '\nDate and Time: ' +
-        date,
-      [
-        {
-          text: 'Cancel',
-          onPress: () => this.resetForm(),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: () => {
-            this.presentLocalNotification(this.state.date);
-            this.resetForm();
-          },
-        },
-      ],
-      { cancellable: false }
-    );
   }
 
   render() {
